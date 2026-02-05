@@ -15,6 +15,51 @@ import {
 // Register all Chart.js components
 Chart.register(...registerables);
 
+// Track which plugins are already registered
+const registeredPlugins = {
+  zoom: false,
+  datalabels: false,
+  annotation: false,
+};
+
+// Register plugins based on config
+const registerRequiredPlugins = async (config) => {
+  const plugins = config?.options?.plugins || {};
+  
+  // Register zoom plugin if needed
+  if (plugins.zoom && !registeredPlugins.zoom) {
+    try {
+      const zoomPlugin = await import('chartjs-plugin-zoom');
+      Chart.register(zoomPlugin.default);
+      registeredPlugins.zoom = true;
+    } catch (e) {
+      console.warn('[VpChart] chartjs-plugin-zoom not installed');
+    }
+  }
+  
+  // Register datalabels plugin if needed (check if not explicitly false)
+  if (plugins.datalabels !== undefined && plugins.datalabels !== false && !registeredPlugins.datalabels) {
+    try {
+      const dataLabelsPlugin = await import('chartjs-plugin-datalabels');
+      Chart.register(dataLabelsPlugin.default);
+      registeredPlugins.datalabels = true;
+    } catch (e) {
+      console.warn('[VpChart] chartjs-plugin-datalabels not installed');
+    }
+  }
+  
+  // Register annotation plugin if needed
+  if (plugins.annotation && !registeredPlugins.annotation) {
+    try {
+      const annotationPlugin = await import('chartjs-plugin-annotation');
+      Chart.register(annotationPlugin.default);
+      registeredPlugins.annotation = true;
+    } catch (e) {
+      console.warn('[VpChart] chartjs-plugin-annotation not installed');
+    }
+  }
+};
+
 const props = defineProps({
   id: {
     type: String,
@@ -76,6 +121,9 @@ const initChart = async () => {
 
   try {
     const config = JSON.parse(decodeURIComponent(props.config));
+    
+    // Register only required plugins based on config
+    await registerRequiredPlugins(config);
     
     chartInstance = new Chart(canvasRef.value, config);
     updateTheme();

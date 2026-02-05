@@ -33,7 +33,12 @@ export const withChartjs = (config: UserConfig) => {
   // 3. Vite optimizeDeps
   if (!config.vite.optimizeDeps) config.vite.optimizeDeps = {};
   if (!config.vite.optimizeDeps.include) config.vite.optimizeDeps.include = [];
-  config.vite.optimizeDeps.include.push("chart.js");
+  config.vite.optimizeDeps.include.push(
+    "chart.js",
+    "chartjs-plugin-zoom",
+    "chartjs-plugin-datalabels",
+    "chartjs-plugin-annotation"
+  );
 
   // 4. Vite SSR
   if (!config.vite.ssr) config.vite.ssr = {};

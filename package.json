@@ -1,0 +1,54 @@
+{
+  "name": "vitepress-plugin-chartjs",
+  "version": "1.0.0",
+  "description": "Chart.js plugin for VitePress - render charts from markdown code blocks",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/vitepress-plugin-chartjs.umd.js",
+  "module": "./dist/vitepress-plugin-chartjs.es.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/vitepress-plugin-chartjs.es.mjs",
+      "require": "./dist/vitepress-plugin-chartjs.umd.js"
+    },
+    "./VpChart.vue": "./dist/VpChart.vue"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "pnpm build && pnpm -C example docs:dev",
+    "docs:build": "pnpm build && pnpm -C example docs:build",
+    "docs:preview": "pnpm -C example docs:preview"
+  },
+  "dependencies": {
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.25",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "chart.js": "^4.4.0",
+    "typescript": "^5.4.2",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.0.0",
+    "vite-plugin-static-copy": "^1.0.0",
+    "vitepress": "^1.0.0",
+    "vue": "^3.4.0"
+  },
+  "peerDependencies": {
+    "chart.js": "^4.0.0",
+    "vitepress": "^1.0.0"
+  },
+  "keywords": [
+    "vitepress",
+    "chartjs",
+    "chart.js",
+    "charts",
+    "markdown",
+    "visualization"
+  ],
+  "author": "",
+  "license": "MIT"
+}

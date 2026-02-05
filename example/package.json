@@ -1,0 +1,23 @@
+{
+  "name": "vitepress-plugin-chartjs-example",
+  "version": "1.0.0",
+  "description": "Example site for vitepress-plugin-chartjs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-chartjs": "workspace:*",
+    "chart.js": "^4.5.1",
+    "chartjs-plugin-zoom": "^2.2.0",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "chartjs-plugin-annotation": "^3.1.0"
+  }
+}

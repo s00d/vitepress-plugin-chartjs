@@ -7,6 +7,8 @@
 
 A powerful VitePress plugin for rendering Chart.js charts directly from markdown code blocks with full TypeScript support.
 
+![vitepress-plugin-chartjs](img.png)
+
 ## Features
 
 - **All Chart Types**: Line, Bar, Pie, Doughnut, Radar, Polar Area, Bubble, Scatter

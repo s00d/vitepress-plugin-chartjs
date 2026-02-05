@@ -1,6 +1,6 @@
 {
   "name": "vitepress-plugin-chartjs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Chart.js plugin for VitePress - render charts from markdown code blocks",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -49,6 +49,14 @@
     "markdown",
     "visualization"
   ],
-  "author": "",
-  "license": "MIT"
+  "author": "s00d",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/s00d/vitepress-plugin-chartjs.git"
+  },
+  "homepage": "https://github.com/s00d/vitepress-plugin-chartjs",
+  "bugs": {
+    "url": "https://github.com/s00d/vitepress-plugin-chartjs/issues"
+  }
 }

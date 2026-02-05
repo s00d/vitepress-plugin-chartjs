@@ -62,7 +62,7 @@ export default withChartjs(
         }
       ],
       socialLinks: [
-        { icon: 'github', link: 'https://github.com/' }
+        { icon: 'github', link: 'https://github.com/s00d/vitepress-plugin-chartjs' }
       ]
     },
   })

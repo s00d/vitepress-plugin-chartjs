@@ -1,5 +1,10 @@
 # vitepress-plugin-chartjs
 
+[![npm version](https://img.shields.io/npm/v/vitepress-plugin-chartjs/latest?style=for-the-badge)](https://www.npmjs.com/package/vitepress-plugin-chartjs)
+[![npm downloads](https://img.shields.io/npm/dw/vitepress-plugin-chartjs?style=for-the-badge)](https://www.npmjs.com/package/vitepress-plugin-chartjs)
+[![License](https://img.shields.io/npm/l/vitepress-plugin-chartjs?style=for-the-badge)](https://www.npmjs.com/package/vitepress-plugin-chartjs)
+[![Donate](https://img.shields.io/badge/Donate-Donationalerts-ff4081?style=for-the-badge)](https://www.donationalerts.com/r/s00d88)
+
 A powerful VitePress plugin for rendering Chart.js charts directly from markdown code blocks with full TypeScript support.
 
 ## Features

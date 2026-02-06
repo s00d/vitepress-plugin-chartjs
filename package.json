@@ -1,6 +1,6 @@
 {
   "name": "vitepress-plugin-chartjs",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Chart.js plugin for VitePress - render charts from markdown code blocks",
   "type": "module",
   "types": "./dist/index.d.ts",

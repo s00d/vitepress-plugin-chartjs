@@ -41,22 +41,23 @@ yarn add vitepress-plugin-chartjs
 ```ts
 // .vitepress/config.mts
 import { defineConfig } from 'vitepress'
-import chartjs from 'vitepress-plugin-chartjs'
+import { withChartjs } from 'vitepress-plugin-chartjs'
 
-export default defineConfig({
-  markdown: {
-    config: (md) => {
-      md.use(chartjs, {
-        // Default options for all charts
-        defaultOptions: {
-          responsive: true,
-          maintainAspectRatio: false,
-        },
-        defaultHeight: '400px',
-      })
+export default withChartjs(
+  defineConfig({
+    title: "My Docs",
+    
+    // Plugin options
+    chartjs: {
+      defaultHeight: '400px',
+      colorPalette: [
+        'rgba(54, 162, 235, 0.8)',
+        'rgba(255, 99, 132, 0.8)',
+        'rgba(75, 192, 192, 0.8)',
+      ],
     },
-  },
-})
+  })
+)
 ```
 
 ### 2. Setup Theme (Optional)
@@ -323,15 +324,7 @@ height: 350px
 
 ## Plugin Configuration
 
-### Enable Zoom
-
-```ts
-md.use(chartjs, {
-  enableZoom: true,
-})
-```
-
-Or per-chart:
+Plugins must be registered in your theme (see Setup Theme above). Then configure per-chart:
 
 ```yaml
 options:
@@ -377,13 +370,13 @@ options:
 
 ## Configuration Options
 
+Options are passed via `chartjs:` in your VitePress config:
+
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `defaultOptions` | `ChartOptions` | `{}` | Default options for all charts |
 | `defaultWidth` | `string \| number` | `'100%'` | Default chart width |
 | `defaultHeight` | `string \| number` | `'400px'` | Default chart height |
-| `enableZoom` | `boolean` | `false` | Enable zoom plugin globally |
-| `enableDatalabels` | `boolean` | `false` | Enable datalabels globally |
 | `colorPalette` | `string[]` | Built-in | Custom color palette |
 
 ## Client API

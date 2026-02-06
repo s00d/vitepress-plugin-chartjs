@@ -9,7 +9,7 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
-import { useData } from 'vitepress';
+import { useData, withBase } from 'vitepress';
 import { 
   Chart, 
   registerables 
@@ -56,11 +56,15 @@ let observer = null;
 // Load config from URL (supports YAML, JSON, and JS modules)
 const loadConfigFromUrl = async (url) => {
   try {
+    // Apply base path for relative URLs
+    const resolvedUrl = url.startsWith('http') ? url : withBase(url);
+    
     // Check if it's a JS file - use dynamic import
     if (url.endsWith('.js') || url.endsWith('.mjs')) {
       // For JS files, we need to import as ES module
-      // The URL should be absolute or relative to the base
-      const absoluteUrl = url.startsWith('http') ? url : new URL(url, window.location.origin).href;
+      const absoluteUrl = resolvedUrl.startsWith('http') 
+        ? resolvedUrl 
+        : new URL(resolvedUrl, window.location.origin).href;
       const module = await import(/* @vite-ignore */ absoluteUrl);
       
       // Support both default export and named 'config' export
@@ -75,7 +79,7 @@ const loadConfigFromUrl = async (url) => {
     }
     
     // For YAML/JSON files, fetch and parse
-    const response = await fetch(url);
+    const response = await fetch(resolvedUrl);
     const text = await response.text();
     
     // Try to parse as YAML first, then JSON

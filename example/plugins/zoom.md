@@ -2,6 +2,33 @@
 
 The zoom plugin allows users to pan and zoom charts interactively.
 
+## Registration
+
+Add to `.vitepress/theme/index.ts`:
+
+```typescript
+import DefaultTheme from 'vitepress/theme'
+
+export default {
+  extends: DefaultTheme,
+  async enhanceApp({ app }) {
+    if (typeof window !== 'undefined') {
+      const { Chart, registerables } = await import('chart.js')
+      Chart.register(...registerables)
+      
+      const zoomPlugin = (await import('chartjs-plugin-zoom')).default
+      Chart.register(zoomPlugin)
+    }
+  }
+}
+```
+
+::: tip Installation
+```bash
+npm install chartjs-plugin-zoom
+```
+:::
+
 ## Basic Zoom
 
 ```chart

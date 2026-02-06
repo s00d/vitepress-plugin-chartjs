@@ -1,0 +1,19 @@
+type: boxplot
+data:
+  labels:
+    - Group A
+    - Group B
+    - Group C
+  datasets:
+    - label: Data Distribution
+      data:
+        - [10, 15, 20, 25, 30, 35, 40, 45, 50]
+        - [20, 25, 30, 35, 40, 45, 50, 55, 60]
+        - [15, 20, 25, 30, 35, 40, 45, 50, 55]
+      backgroundColor: rgba(54, 162, 235, 0.5)
+      borderColor: rgba(54, 162, 235, 1)
+options:
+  plugins:
+    title:
+      display: true
+      text: Box Plot from File

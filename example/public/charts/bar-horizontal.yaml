@@ -1,0 +1,24 @@
+type: bar
+data:
+  labels:
+    - Product A
+    - Product B
+    - Product C
+    - Product D
+    - Product E
+  datasets:
+    - label: Revenue ($K)
+      data: [120, 190, 300, 250, 180]
+      backgroundColor:
+        - rgba(255, 99, 132, 0.8)
+        - rgba(54, 162, 235, 0.8)
+        - rgba(255, 206, 86, 0.8)
+        - rgba(75, 192, 192, 0.8)
+        - rgba(153, 102, 255, 0.8)
+      borderWidth: 1
+options:
+  indexAxis: y
+  plugins:
+    title:
+      display: true
+      text: Revenue by Product

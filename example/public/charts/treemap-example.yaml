@@ -1,0 +1,43 @@
+type: treemap
+data:
+  datasets:
+    - label: Expense Structure
+      tree:
+        - value: 300
+          group: Food
+          label: Groceries
+        - value: 150
+          group: Food
+          label: Drinks
+        - value: 200
+          group: Transport
+          label: Fuel
+        - value: 100
+          group: Transport
+          label: Public Transit
+        - value: 250
+          group: Entertainment
+          label: Movies
+        - value: 180
+          group: Entertainment
+          label: Games
+      key: value
+      groups:
+        - group
+      backgroundColor:
+        - rgba(255, 99, 132, 0.8)
+        - rgba(54, 162, 235, 0.8)
+        - rgba(255, 206, 86, 0.8)
+        - rgba(75, 192, 192, 0.8)
+        - rgba(153, 102, 255, 0.8)
+        - rgba(255, 159, 64, 0.8)
+      borderWidth: 1
+      spacing: 1
+      labels:
+        display: true
+        color: white
+options:
+  plugins:
+    title:
+      display: true
+      text: Treemap from File

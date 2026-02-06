@@ -4,6 +4,7 @@ Bar charts display data as rectangular bars with lengths proportional to the val
 
 ## Basic Bar Chart
 
+
 ```chart
 type: bar
 data:

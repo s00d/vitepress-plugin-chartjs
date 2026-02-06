@@ -30,14 +30,13 @@ export const withChartjs = (config: UserConfig) => {
   if (!config.vite.plugins) config.vite.plugins = [];
   config.vite.plugins.push(ChartjsPlugin(config.chartjs) as any);
 
-  // 3. Vite optimizeDeps
+  // 3. Vite optimizeDeps - only core dependencies
+  // Plugins are added by user in their vite config if needed
   if (!config.vite.optimizeDeps) config.vite.optimizeDeps = {};
   if (!config.vite.optimizeDeps.include) config.vite.optimizeDeps.include = [];
   config.vite.optimizeDeps.include.push(
     "chart.js",
-    "chartjs-plugin-zoom",
-    "chartjs-plugin-datalabels",
-    "chartjs-plugin-annotation"
+    "yaml"
   );
 
   // 4. Vite SSR

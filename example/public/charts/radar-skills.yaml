@@ -1,0 +1,29 @@
+type: radar
+data:
+  labels:
+    - JavaScript
+    - TypeScript
+    - Vue.js
+    - React
+    - Node.js
+    - CSS
+  datasets:
+    - label: Developer A
+      data: [90, 85, 95, 70, 80, 75]
+      backgroundColor: rgba(54, 162, 235, 0.2)
+      borderColor: rgba(54, 162, 235, 1)
+      pointBackgroundColor: rgba(54, 162, 235, 1)
+    - label: Developer B
+      data: [70, 90, 60, 95, 85, 80]
+      backgroundColor: rgba(255, 99, 132, 0.2)
+      borderColor: rgba(255, 99, 132, 1)
+      pointBackgroundColor: rgba(255, 99, 132, 1)
+options:
+  scales:
+    r:
+      min: 0
+      max: 100
+  plugins:
+    title:
+      display: true
+      text: Developer Skills Comparison

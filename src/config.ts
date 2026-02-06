@@ -9,7 +9,17 @@ export type SupportedChartType =
   | 'radar'
   | 'polarArea'
   | 'bubble'
-  | 'scatter';
+  | 'scatter'
+  | 'boxplot'
+  | 'violin'
+  | 'choropleth'
+  | 'bubbleMap'
+  | 'matrix'
+  | 'treemap'
+  | 'graph'
+  | 'forceDirectedGraph'
+  | 'dendrogram'
+  | 'tree';
 
 /**
  * Dataset configuration for Line charts

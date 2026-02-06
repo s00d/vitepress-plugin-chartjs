@@ -2,6 +2,33 @@
 
 Add lines, boxes, labels, and other annotations to charts.
 
+## Registration
+
+Add to `.vitepress/theme/index.ts`:
+
+```typescript
+import DefaultTheme from 'vitepress/theme'
+
+export default {
+  extends: DefaultTheme,
+  async enhanceApp({ app }) {
+    if (typeof window !== 'undefined') {
+      const { Chart, registerables } = await import('chart.js')
+      Chart.register(...registerables)
+      
+      const annotationPlugin = (await import('chartjs-plugin-annotation')).default
+      Chart.register(annotationPlugin)
+    }
+  }
+}
+```
+
+::: tip Installation
+```bash
+npm install chartjs-plugin-annotation
+```
+:::
+
 ## Line Annotation
 
 ```chart

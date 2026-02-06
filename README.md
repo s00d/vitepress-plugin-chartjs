@@ -11,12 +11,12 @@ A powerful VitePress plugin for rendering Chart.js charts directly from markdown
 
 ## Features
 
-- **All Chart Types**: Line, Bar, Pie, Doughnut, Radar, Polar Area, Bubble, Scatter
+- **All Chart Types**: Line, Bar, Pie, Doughnut, Radar, Polar Area, Bubble, Scatter and more
 - **Full Chart.js 4.x Support**: Complete TypeScript types for all options
-- **Popular Plugins Included**:
-  - `chartjs-plugin-zoom` - Pan and zoom functionality
-  - `chartjs-plugin-datalabels` - Display labels on data points
-  - `chartjs-plugin-annotation` - Add lines, boxes, and labels
+- **Any Plugin Support**: Register any Chart.js plugin or chart type extension in your theme - the core is completely plugin-agnostic
+- **Lazy Loading**: Charts initialize only when visible on screen (IntersectionObserver)
+- **External Config**: Load chart configurations from YAML, JSON, or JavaScript files
+- **Auto-Refresh**: Periodically reload data from JavaScript config files
 - **Dark Mode Support**: Automatic theme switching
 - **Responsive**: Charts adapt to container size
 - **Simple Syntax**: YAML or JSON configuration in code blocks
@@ -59,34 +59,29 @@ export default defineConfig({
 })
 ```
 
-### 2. Setup Theme
+### 2. Setup Theme (Optional)
 
-Create `.vitepress/theme/index.ts`:
+If you want to use Chart.js plugins or extended chart types, create `.vitepress/theme/index.ts`:
 
 ```ts
 import DefaultTheme from 'vitepress/theme'
-import { onMounted, watch, nextTick } from 'vue'
-import { useRoute } from 'vitepress'
-import { initCharts, destroyCharts } from 'vitepress-plugin-chartjs/client'
 
 export default {
   extends: DefaultTheme,
-  setup() {
-    const route = useRoute()
-    
-    onMounted(() => {
-      nextTick(() => initCharts())
-    })
-    
-    watch(() => route.path, () => {
-      nextTick(() => {
-        destroyCharts()
-        initCharts()
-      })
-    })
+  async enhanceApp({ app }) {
+    // Only load on client (SSR-safe)
+    if (typeof window !== 'undefined') {
+      const { Chart, registerables } = await import('chart.js')
+      Chart.register(...registerables)
+      
+      const zoomPlugin = (await import('chartjs-plugin-zoom')).default
+      Chart.register(zoomPlugin)
+    }
   }
 }
 ```
+
+If you don't need plugins, you can skip this step — basic chart types work without any setup.
 
 ### 3. Create Charts in Markdown
 
@@ -109,6 +104,106 @@ options:
       text: Monthly Sales Comparison
 ```
 ````
+
+### 4. Load Configuration from File
+
+You can load chart configuration from external files in your `public` folder. Supports **YAML**, **JSON**, and **JavaScript** files.
+
+#### YAML/JSON Files
+
+````markdown
+```chart
+url: /charts/my-chart.yaml
+```
+````
+
+Example YAML file (`public/charts/my-chart.yaml`):
+
+```yaml
+type: line
+data:
+  labels: [January, February, March, April, May, June]
+  datasets:
+    - label: Sales 2024
+      data: [65, 59, 80, 81, 56, 55]
+      borderColor: rgba(54, 162, 235, 1)
+      tension: 0.4
+```
+
+#### JavaScript Files (Dynamic Data)
+
+Use JavaScript files to generate dynamic configurations:
+
+````markdown
+```chart
+url: /charts/dynamic-chart.js
+```
+````
+
+Example JS file (`public/charts/dynamic-chart.js`):
+
+```javascript
+// Function export - called each time chart is rendered
+export default function() {
+  const randomData = Array.from({ length: 6 }, () => 
+    Math.floor(Math.random() * 100)
+  );
+  
+  return {
+    type: 'bar',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [{
+        label: 'Random Data',
+        data: randomData
+      }]
+    }
+  };
+}
+```
+
+Async functions are also supported for API data fetching:
+
+```javascript
+export default async function() {
+  const response = await fetch('/api/data');
+  const data = await response.json();
+  
+  return {
+    type: 'line',
+    data: data
+  };
+}
+```
+
+| File Type | Extension | Description |
+|-----------|-----------|-------------|
+| YAML | `.yaml` | Static configuration |
+| JSON | `.json` | Static configuration |
+| JavaScript | `.js`, `.mjs` | Dynamic/computed configuration |
+
+This allows you to:
+- **Reuse** chart configurations across multiple pages
+- **Separate** data from documentation content
+- **Generate** dynamic data with JavaScript
+- **Fetch** data from APIs with async functions
+- **Share** chart templates between projects
+
+#### Auto-Refresh
+
+Add the `refresh` parameter to automatically reload data at a specified interval (in milliseconds):
+
+````markdown
+```chart
+url: /charts/realtime-data.js
+refresh: 2000
+```
+````
+
+This will call the JS function every 2 seconds and update the chart with new data. Perfect for:
+- **Server monitoring** dashboards
+- **Live data** visualizations
+- **Simulated realtime** demos
 
 ## Chart Types
 
@@ -168,6 +263,63 @@ data:
         - { x: 10, y: 20 }
         - { x: 20, y: 30 }
 ```
+
+### Box Plot / Violin
+
+```yaml
+type: boxplot
+data:
+  labels: [Group A, Group B, Group C]
+  datasets:
+    - label: Distribution
+      data:
+        - [10, 15, 20, 25, 30, 35, 40]
+        - [5, 10, 15, 20, 25, 30, 35, 40]
+        - [15, 20, 25, 30, 35, 40, 45]
+```
+
+### Choropleth / Geographic Maps
+
+Geographic charts require loading data via JavaScript files. Create a JS config file:
+
+```javascript
+// public/charts/us-map.js
+export default async function() {
+  const topojson = await import('https://esm.sh/topojson-client@3')
+  const response = await fetch('https://unpkg.com/us-atlas/states-10m.json')
+  const us = await response.json()
+  
+  const nation = topojson.feature(us, us.objects.nation).features[0]
+  const states = topojson.feature(us, us.objects.states).features
+  
+  return {
+    type: 'choropleth',
+    data: {
+      labels: states.map((d) => d.properties.name),
+      datasets: [{
+        label: 'States',
+        outline: nation,
+        data: states.map((d) => ({ feature: d, value: Math.random() * 10 }))
+      }]
+    },
+    options: {
+      scales: {
+        projection: { axis: 'x', projection: 'albersUsa' },
+        color: { axis: 'x', quantize: 5 }
+      }
+    }
+  }
+}
+```
+
+Then use in markdown:
+
+````markdown
+```chart
+url: /charts/us-map.js
+height: 350px
+```
+````
 
 ## Plugin Configuration
 
@@ -273,10 +425,10 @@ import type {
 
 ## Dependencies
 
-- [Chart.js](https://www.chartjs.org/) ^4.4.0
-- [chartjs-plugin-zoom](https://www.chartjs.org/chartjs-plugin-zoom/) ^2.2.0
-- [chartjs-plugin-datalabels](https://chartjs-plugin-datalabels.netlify.app/) ^2.2.0
-- [chartjs-plugin-annotation](https://www.chartjs.org/chartjs-plugin-annotation/) ^3.1.0
+- [Chart.js](https://www.chartjs.org/) ^4.0.0
+- [VitePress](https://vitepress.dev/) ^1.0.0
+
+Any Chart.js plugins you want to use should be installed separately and registered in your theme.
 
 ## License
 

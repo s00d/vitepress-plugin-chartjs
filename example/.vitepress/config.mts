@@ -38,6 +38,7 @@ export default withChartjs(
           items: [
             { text: 'Getting Started', link: '/' },
             { text: 'Examples', link: '/examples' },
+            { text: 'External Files', link: '/charts/external' },
             { text: 'API Reference', link: '/api' }
           ]
         },
@@ -49,15 +50,25 @@ export default withChartjs(
             { text: 'Pie & Doughnut', link: '/charts/pie' },
             { text: 'Radar Charts', link: '/charts/radar' },
             { text: 'Polar Area', link: '/charts/polar' },
-            { text: 'Scatter & Bubble', link: '/charts/scatter' }
+            { text: 'Scatter & Bubble', link: '/charts/scatter' },
+            { text: 'Box Plot & Violin', link: '/charts/boxplot' },
+            { text: 'Geographic Maps', link: '/charts/geo' },
+            { text: 'Matrix / Heatmap', link: '/charts/matrix' },
+            { text: 'Treemap', link: '/charts/treemap' },
+            { text: 'Graph / Tree', link: '/charts/graph' }
           ]
         },
         {
           text: 'Plugins',
           items: [
+            { text: 'Plugin Setup', link: '/plugins/setup' },
             { text: 'Zoom', link: '/plugins/zoom' },
             { text: 'Data Labels', link: '/plugins/datalabels' },
-            { text: 'Annotations', link: '/plugins/annotations' }
+            { text: 'Annotations', link: '/plugins/annotations' },
+            { text: 'Auto Colors', link: '/plugins/autocolors' },
+            { text: 'Color Schemes', link: '/plugins/colorschemes' },
+            { text: 'Timestack Scale', link: '/plugins/timestack' },
+            { text: 'Streaming', link: '/plugins/streaming' }
           ]
         }
       ],

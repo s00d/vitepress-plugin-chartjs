@@ -1,0 +1,33 @@
+type: forceDirectedGraph
+data:
+  labels:
+    - Server
+    - Client 1
+    - Client 2
+    - Client 3
+    - Database
+  datasets:
+    - label: Network Topology
+      data:
+        - { x: 0, y: 0 }
+        - { x: 0, y: 0 }
+        - { x: 0, y: 0 }
+        - { x: 0, y: 0 }
+        - { x: 0, y: 0 }
+      edges:
+        - { source: 0, target: 1 }
+        - { source: 0, target: 2 }
+        - { source: 0, target: 3 }
+        - { source: 0, target: 4 }
+      pointBackgroundColor:
+        - rgba(255, 99, 132, 1)
+        - rgba(54, 162, 235, 1)
+        - rgba(54, 162, 235, 1)
+        - rgba(54, 162, 235, 1)
+        - rgba(75, 192, 192, 1)
+      pointRadius: 15
+options:
+  plugins:
+    title:
+      display: true
+      text: Network Topology Graph from File

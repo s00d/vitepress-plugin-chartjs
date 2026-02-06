@@ -20,7 +20,7 @@ export default defineConfig({
       entry: path.resolve(__dirname, "src/index.ts"),
       name: "ChartjsPlugin",
       fileName: (format: string) =>
-        format == "es"
+        format === "es"
           ? `vitepress-plugin-chartjs.${format}.mjs`
           : `vitepress-plugin-chartjs.${format}.js`,
     },
@@ -31,9 +31,6 @@ export default defineConfig({
         "vite",
         "yaml",
         "chart.js",
-        "chartjs-plugin-zoom",
-        "chartjs-plugin-datalabels",
-        "chartjs-plugin-annotation",
         "path",
         "url",
       ],

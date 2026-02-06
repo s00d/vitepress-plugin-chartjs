@@ -109,7 +109,7 @@ export const ChartjsMarkdown = (md: any, pluginOptions: PluginConfig = {}) => {
     if (info === 'chart' || info === 'chartjs') {
       try {
         const content = token.content.trim();
-        let config: ChartConfig;
+        let config: any;
         
         try {
           config = YAML.parse(content);
@@ -117,11 +117,31 @@ export const ChartjsMarkdown = (md: any, pluginOptions: PluginConfig = {}) => {
           config = JSON.parse(content);
         }
 
+        const height = (config as any)?.height || pluginOptions.defaultHeight || '400px';
+        const chartId = `chart-${idx}`;
+
+        // Check if config has URL - load from external file
+        if (config && config.url) {
+          const configUrl = config.url;
+          const refreshInterval = config.refresh ? Number(config.refresh) : 0;
+          return `
+<Suspense>
+  <template #default>
+    <VpChart id="${chartId}" configUrl="${configUrl}" height="${height}" :refreshInterval="${refreshInterval}" />
+  </template>
+  <template #fallback>
+    <div class="vp-chart-loading" style="height: ${height}; display: flex; align-items: center; justify-content: center; background: var(--vp-c-bg-soft); border-radius: 8px; margin: 1em 0;">
+      Loading chart...
+    </div>
+  </template>
+</Suspense>`;
+        }
+
         if (!config || !config.type) {
           throw new Error('Invalid chart config: missing "type"');
         }
 
-        const validTypes = ['line', 'bar', 'pie', 'doughnut', 'radar', 'polarArea', 'bubble', 'scatter'];
+        const validTypes = ['line', 'bar', 'pie', 'doughnut', 'radar', 'polarArea', 'bubble', 'scatter', 'boxplot', 'violin', 'choropleth', 'bubbleMap', 'matrix', 'treemap', 'graph', 'forceDirectedGraph', 'dendrogram', 'tree'];
         if (!validTypes.includes(config.type)) {
           throw new Error(`Invalid chart type: "${config.type}". Must be one of: ${validTypes.join(', ')}`);
         }
@@ -154,8 +174,6 @@ export const ChartjsMarkdown = (md: any, pluginOptions: PluginConfig = {}) => {
           config.options.plugins.datalabels = pluginOptions.enableDatalabels ? {} : false;
         }
 
-        const height = pluginOptions.defaultHeight || '400px';
-        const chartId = `chart-${idx}`;
         const encodedConfig = encodeURIComponent(JSON.stringify(config));
 
         // Return Vue component with Suspense for async loading

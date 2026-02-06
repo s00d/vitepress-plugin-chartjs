@@ -1,0 +1,33 @@
+type: scatter
+data:
+  datasets:
+    - label: Group A
+      data:
+        - { x: 10, y: 20 }
+        - { x: 15, y: 25 }
+        - { x: 20, y: 30 }
+        - { x: 25, y: 28 }
+        - { x: 30, y: 35 }
+      backgroundColor: rgba(255, 99, 132, 0.8)
+    - label: Group B
+      data:
+        - { x: 12, y: 15 }
+        - { x: 18, y: 22 }
+        - { x: 22, y: 18 }
+        - { x: 28, y: 25 }
+        - { x: 35, y: 30 }
+      backgroundColor: rgba(54, 162, 235, 0.8)
+options:
+  scales:
+    x:
+      title:
+        display: true
+        text: X Axis
+    y:
+      title:
+        display: true
+        text: Y Axis
+  plugins:
+    title:
+      display: true
+      text: Scatter Plot

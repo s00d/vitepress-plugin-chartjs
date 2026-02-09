@@ -1,6 +1,6 @@
 {
   "name": "vitepress-plugin-chartjs",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Chart.js plugin for VitePress - render charts from markdown code blocks",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -31,7 +31,8 @@
     "docs:preview": "pnpm -C example docs:preview"
   },
   "dependencies": {
-    "yaml": "^2.8.0"
+    "yaml": "^2.8.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
@@ -43,8 +44,7 @@
     "vite-plugin-dts": "^4.5.0",
     "vitepress": "^1.0.0",
     "vue": "^3.5.0",
-    "vue-tsc": "^3.2.4",
-    "zod": "^4.3.6"
+    "vue-tsc": "^3.2.4"
   },
   "peerDependencies": {
     "chart.js": "^4.0.0",

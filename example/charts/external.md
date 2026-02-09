@@ -2,6 +2,11 @@
 
 You can load chart configuration from external files in your `public` folder. This supports **YAML**, **JSON**, and **JavaScript** files.
 
+All external files are resolved **at build time** — the client never fetches data. This means:
+- Faster page loads (no runtime fetch)
+- Works in offline/static builds
+- JS modules are executed once during build
+
 ## YAML File
 
 Load configuration from a YAML file:
@@ -38,7 +43,7 @@ url: /charts/bar-horizontal.yaml
 
 ## JavaScript - Function Export
 
-JavaScript files can export a function that returns the configuration. This allows for dynamic data generation. The function is called each time the chart is rendered, so data can be randomized.
+JavaScript files can export a function that returns the configuration. The function is called **at build time** in Node.js, so you can use `fs`, `path`, and other Node APIs.
 
 ```chart
 url: /charts/dynamic-line.js
@@ -107,7 +112,7 @@ export default function() {
 
 ## JavaScript - Async Function
 
-JavaScript files can export async functions for data fetching. This is useful when you need to load data from an API before rendering the chart.
+JavaScript files can export async functions for data fetching. This is useful when you need to load data from an API **during build**.
 
 ```chart
 url: /charts/realtime-bar.js
@@ -179,7 +184,7 @@ export default async function() {
 
 ## JavaScript - Object Export
 
-You can also export a configuration object directly. Note that the code runs once when the module is loaded.
+You can also export a configuration object directly. Note that the code runs once when the module is loaded at build time.
 
 ```chart
 url: /charts/pie-random.js
@@ -244,7 +249,7 @@ export default {
 
 ## Computed Data Example
 
-Generate complex mathematical data with JavaScript. This example shows sine and cosine waves computed programmatically.
+Generate complex mathematical data with JavaScript. This example shows sine and cosine waves computed programmatically at build time.
 
 ```chart
 url: /charts/scatter-computed.js
@@ -348,198 +353,41 @@ export default function() {
 
 ---
 
-## Auto-Refresh
+## JavaScript with Node.js APIs
 
-You can automatically refresh chart data at a specified interval using the `refresh` parameter. The value is in milliseconds.
+Since JS modules are executed at build time in Node.js, you can use `fs`, `path`, and other Node APIs to read local files:
 
-### Realtime Server Metrics
-
-This chart updates every 2 seconds with new random data:
-
-```chart
-url: /charts/realtime-data.js
-refresh: 2000
-```
-
-**Code:** | [View Config](/charts/realtime-data.js)
-
-````yaml
-```chart
-url: /charts/realtime-data.js
-refresh: 2000
-```
-````
-
-::: details View realtime-data.js source code
+::: details Example: reading a JSON data file
 ```javascript
-// Realtime data generator - returns new random data on each call
-export default function() {
-  const now = Date.now();
-  const labels = [];
-  const data1 = [];
-  const data2 = [];
-  
-  // Generate last 10 data points
-  for (let i = 9; i >= 0; i--) {
-    const time = new Date(now - i * 1000);
-    labels.push(time.toLocaleTimeString());
-    data1.push(Math.floor(Math.random() * 100));
-    data2.push(Math.floor(Math.random() * 80));
-  }
-  
-  return {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'CPU Usage (%)',
-          data: data1,
-          borderColor: 'rgba(54, 162, 235, 1)',
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-          fill: true,
-          tension: 0.4
-        },
-        {
-          label: 'Memory Usage (%)',
-          data: data2,
-          borderColor: 'rgba(255, 99, 132, 1)',
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-          fill: true,
-          tension: 0.4
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: {
-        duration: 300
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          max: 100,
-          title: {
-            display: true,
-            text: 'Usage (%)'
-          }
-        }
-      },
-      plugins: {
-        title: {
-          display: true,
-          text: 'Server Metrics (Auto-Refresh)'
-        }
-      }
-    }
-  };
-}
-```
-:::
+// public/charts/from-file.js
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
----
+export default function () {
+  const __dir = dirname(fileURLToPath(import.meta.url));
+  const data = JSON.parse(readFileSync(join(__dir, 'data.json'), 'utf-8'));
 
-### Live Bar Chart
-
-Bar chart that refreshes every 3 seconds:
-
-```chart
-url: /charts/live-bar.js
-refresh: 3000
-```
-
-**Code:** | [View Config](/charts/live-bar.js)
-
-````yaml
-```chart
-url: /charts/live-bar.js
-refresh: 3000
-```
-````
-
-::: details View live-bar.js source code
-```javascript
-// Live bar chart - simulates API data
-export default async function() {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  const categories = ['Products', 'Services', 'Support', 'Marketing', 'Sales'];
-  const currentValues = categories.map(() => Math.floor(Math.random() * 1000));
-  const previousValues = categories.map(() => Math.floor(Math.random() * 800));
-  
   return {
     type: 'bar',
     data: {
-      labels: categories,
-      datasets: [
-        {
-          label: 'Current Period',
-          data: currentValues,
-          backgroundColor: 'rgba(54, 162, 235, 0.8)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1
-        },
-        {
-          label: 'Previous Period',
-          data: previousValues,
-          backgroundColor: 'rgba(255, 99, 132, 0.8)',
-          borderColor: 'rgba(255, 99, 132, 1)',
-          borderWidth: 1
-        }
-      ]
+      labels: data.labels,
+      datasets: [{
+        label: 'Sales',
+        data: data.values,
+      }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: {
-        duration: 500
-      },
       plugins: {
         title: {
           display: true,
-          text: 'Revenue by Category (Updates every 3s)'
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Revenue ($)'
-          }
+          text: 'Data from JSON file'
         }
       }
     }
   };
 }
 ```
-:::
-
----
-
-### Refresh Parameter
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `refresh` | number | Interval in milliseconds to reload data from the URL |
-
-**Examples:**
-
-| Value | Interval |
-|-------|----------|
-| `1000` | Every 1 second |
-| `5000` | Every 5 seconds |
-| `30000` | Every 30 seconds |
-| `60000` | Every 1 minute |
-
-::: tip
-Use `refresh` with JavaScript functions that generate new data on each call. YAML/JSON files will return the same data, so refreshing them is less useful unless the file is updated externally.
-:::
-
-::: warning Performance
-Be mindful of refresh intervals. Very short intervals (< 1000ms) may impact performance. For real-time data, consider using the streaming plugin instead.
 :::
 
 ---
@@ -557,24 +405,25 @@ Be mindful of refresh intervals. Very short intervals (< 1000ms) may impact perf
 
 | Export Type | When Called | Use Case |
 |-------------|-------------|----------|
-| `export default { ... }` | Once on module load | Static config with computed values |
-| `export default function() { ... }` | Each chart render | Random/dynamic data |
-| `export default async function() { ... }` | Each chart render | API data fetching |
+| `export default { ... }` | Once at build time | Static config with computed values |
+| `export default function() { ... }` | Once at build time | Random/dynamic data |
+| `export default async function() { ... }` | Once at build time | API data fetching during build |
 
 ## Benefits
 
+- **Fast loading**: Data is embedded at build time — no runtime fetch
 - **Reusability**: Share configurations across multiple pages
 - **Maintainability**: Keep complex configs in separate files
-- **Dynamic Data**: Generate data at runtime with JavaScript
-- **Async Loading**: Fetch data from APIs before rendering
+- **Dynamic Data**: Generate data at build time with JavaScript
+- **Node.js APIs**: Use `fs`, `path`, `fetch` in JS modules during build
 - **Separation of Concerns**: Keep data separate from documentation
 - **Version Control**: Track config changes in git
 
 ## Best Practices
 
 1. **Use YAML/JSON** for static configurations
-2. **Use JS functions** when you need dynamic/random data
-3. **Use async functions** when fetching from APIs
+2. **Use JS functions** when you need computed/random data
+3. **Use async functions** when fetching from APIs during build
 4. **Place files in `public/charts/`** for organized structure
 5. **Use descriptive filenames** like `sales-2024.yaml` or `user-growth.js`
 6. **Add comments** in JS files to explain data generation logic

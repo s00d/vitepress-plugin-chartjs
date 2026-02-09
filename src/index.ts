@@ -1,18 +1,21 @@
-import { type UserConfig } from "vitepress";
-import { ChartjsMarkdown } from "./chartjs-markdown";
-import { ChartjsPlugin, ChartjsPluginConfig } from "./chartjs-plugin";
-import type { PluginConfig } from "./config";
+import { type UserConfig } from 'vitepress';
+import { ChartjsMarkdown } from './markdown';
+import { ChartjsPlugin } from './chartjs-plugin';
+import type { PluginConfig } from './config';
 
-export { ChartjsMarkdown } from "./chartjs-markdown";
-export { ChartjsPlugin } from "./chartjs-plugin";
-export * from "./config";
+export { ChartjsMarkdown } from './markdown';
+export { ChartjsPlugin } from './chartjs-plugin';
+export { resolveUrl } from './markdown';
+export type { ResolveResult } from './markdown';
+export { validateChartData, validateChartInput } from './config';
+export type { ValidationResult } from './config';
+export * from './config';
 
 export { UserConfig };
 
-declare module "vitepress" {
+declare module 'vitepress' {
   interface UserConfig {
     chartjs?: PluginConfig;
-    chartjsPlugin?: ChartjsPluginConfig;
   }
 }
 
@@ -30,20 +33,20 @@ export const withChartjs = (config: UserConfig) => {
   if (!config.vite.plugins) config.vite.plugins = [];
   config.vite.plugins.push(ChartjsPlugin(config.chartjs) as any);
 
-  // 3. Vite optimizeDeps - only core dependencies
-  // Plugins are added by user in their vite config if needed
+  // 3. Vite optimizeDeps
   if (!config.vite.optimizeDeps) config.vite.optimizeDeps = {};
   if (!config.vite.optimizeDeps.include) config.vite.optimizeDeps.include = [];
   config.vite.optimizeDeps.include.push(
-    "chart.js",
-    "yaml"
+    'chart.js',
+    'yaml',
+    'zod'
   );
 
-  // 4. Vite SSR
+  // 4. SSR
   if (!config.vite.ssr) config.vite.ssr = {};
   if (!config.vite.ssr.noExternal) config.vite.ssr.noExternal = [];
   if (Array.isArray(config.vite.ssr.noExternal)) {
-    config.vite.ssr.noExternal.push("vitepress-plugin-chartjs");
+    config.vite.ssr.noExternal.push('vitepress-plugin-chartjs');
   }
 
   return config;

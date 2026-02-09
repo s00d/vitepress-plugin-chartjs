@@ -16,6 +16,6 @@
     "noImplicitReturns": false,
     "useDefineForClassFields": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.vue"],
   "exclude": ["node_modules", "dist"]
 }

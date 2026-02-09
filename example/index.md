@@ -1,6 +1,6 @@
 # VitePress Plugin Chart.js
 
-A **zero-config** Chart.js plugin for VitePress - render beautiful charts directly from markdown code blocks.
+A **zero-config** Chart.js plugin for VitePress — render beautiful charts directly from markdown code blocks.
 
 ## Quick Start
 
@@ -44,13 +44,14 @@ options:
 
 ## Features
 
-- **Zero Config** - Just wrap your config with `withChartjs()`
-- **All Chart Types** - Line, Bar, Pie, Doughnut, Radar, Polar Area, Bubble, Scatter
-- **Full Chart.js 4.x Support** - Complete TypeScript types
-- **Optional Plugins** - Zoom, Data Labels, Annotations
-- **Dark Mode** - Automatic theme switching
-- **SSR Safe** - Works with VitePress static generation
-- **Config Merging** - Your vite/vue configs are preserved
+- **Zero Config** — Just wrap your config with `withChartjs()`
+- **All Chart Types** — Line, Bar, Pie, Doughnut, Radar, Polar Area, Bubble, Scatter
+- **Extended Types** — Box Plot, Violin, Treemap, Matrix, Geographic Maps, Graph
+- **Build-Time Resolution** — External configs (YAML, JSON, JS) resolved at build time, no runtime fetch
+- **Dark Mode** — Automatic theme switching
+- **SSR Safe** — Works with VitePress static generation
+- **Lazy Loading** — Charts render only when visible (IntersectionObserver)
+- **Config Merging** — Your vite/vue configs are preserved
 
 ## Installation
 
@@ -59,6 +60,8 @@ pnpm add vitepress-plugin-chartjs chart.js
 ```
 
 ## Setup
+
+### 1. VitePress Config
 
 Wrap your config in `.vitepress/config.mts`:
 
@@ -72,9 +75,22 @@ export default withChartjs(defineConfig({
 }))
 ```
 
-**That's it!** No theme configuration needed. Your existing vite/vue configs are preserved.
+### 2. Theme Setup
 
-## With Plugin Options
+Create `.vitepress/theme/index.ts` and import plugin styles:
+
+```ts
+import DefaultTheme from 'vitepress/theme'
+import 'vitepress-plugin-chartjs/style.css'
+
+export default DefaultTheme
+```
+
+::: warning Style Import Required
+You must import `vitepress-plugin-chartjs/style.css` in your theme for charts to render correctly.
+:::
+
+### 3. With Plugin Options
 
 ```ts
 import { defineConfig } from 'vitepress'
@@ -83,12 +99,12 @@ import { withChartjs } from 'vitepress-plugin-chartjs'
 export default withChartjs(
   defineConfig({
     title: "My Site",
-  }),
-  {
-    defaultHeight: '400px',
-    enableZoom: true,
-    colorPalette: ['#3b82f6', '#ef4444', '#22c55e'],
-  }
+    chartjs: {
+      defaultHeight: '400px',
+      enableZoom: true,
+      colorPalette: ['#3b82f6', '#ef4444', '#22c55e'],
+    },
+  })
 )
 ```
 

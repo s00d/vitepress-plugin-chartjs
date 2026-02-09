@@ -1,4 +1,6 @@
 import DefaultTheme from 'vitepress/theme'
+// Import plugin styles
+import 'vitepress-plugin-chartjs/style.css'
 
 export default {
   extends: DefaultTheme,

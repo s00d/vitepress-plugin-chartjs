@@ -1,3 +1,3 @@
 import VpChart from './VpChart.vue';
 
-export { VpChart };
+export default VpChart;

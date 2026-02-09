@@ -1,7 +1,7 @@
 <template>
   <div ref="wrapperRef" class="vp-chart-wrapper" :style="{ height: height }">
-    <canvas v-if="isVisible" ref="canvasRef" :id="id"></canvas>
-    <div v-else class="vp-chart-placeholder">
+    <canvas v-show="isVisible" ref="canvasRef" :id="id"></canvas>
+    <div v-show="!isVisible" class="vp-chart-placeholder">
       <span>Loading chart...</span>
     </div>
   </div>
@@ -9,10 +9,10 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
-import { useData, withBase } from 'vitepress';
-import { 
-  Chart, 
-  registerables 
+import { useData } from 'vitepress';
+import {
+  Chart,
+  registerables
 } from 'chart.js';
 
 // Register all Chart.js built-in components
@@ -27,77 +27,22 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  config: {
-    type: String,
-    required: false,
-    default: '',
-  },
-  configUrl: {
-    type: String,
-    required: false,
-    default: '',
+  /** Pre-parsed chart configuration (resolved at build time). */
+  data: {
+    type: Object,
+    default: () => ({}),
   },
   height: {
     type: String,
-    required: false,
     default: '400px',
-  },
-  refreshInterval: {
-    type: Number,
-    required: false,
-    default: 0,
   },
 });
 
 const wrapperRef = ref(null);
-const isVisible = ref(false);
-let observer = null;
-
-// Load config from URL (supports YAML, JSON, and JS modules)
-const loadConfigFromUrl = async (url) => {
-  try {
-    // Apply base path for relative URLs
-    const resolvedUrl = url.startsWith('http') ? url : withBase(url);
-    
-    // Check if it's a JS file - use dynamic import
-    if (url.endsWith('.js') || url.endsWith('.mjs')) {
-      // For JS files, we need to import as ES module
-      const absoluteUrl = resolvedUrl.startsWith('http') 
-        ? resolvedUrl 
-        : new URL(resolvedUrl, window.location.origin).href;
-      const module = await import(/* @vite-ignore */ absoluteUrl);
-      
-      // Support both default export and named 'config' export
-      // Also support function that returns config (async or sync)
-      let config = module.default || module.config || module;
-      
-      if (typeof config === 'function') {
-        config = await config();
-      }
-      
-      return config;
-    }
-    
-    // For YAML/JSON files, fetch and parse
-    const response = await fetch(resolvedUrl);
-    const text = await response.text();
-    
-    // Try to parse as YAML first, then JSON
-    try {
-      const yaml = await import('yaml');
-      return yaml.parse(text);
-    } catch {
-      return JSON.parse(text);
-    }
-  } catch (e) {
-    console.error('[VpChart] Failed to load config from URL:', e);
-    throw e;
-  }
-};
-
 const canvasRef = ref(null);
+const isVisible = ref(false);
 let chartInstance = null;
-let refreshTimer = null;
+let observer = null;
 
 const { isDark } = useData();
 
@@ -129,97 +74,26 @@ const updateTheme = () => {
   chartInstance.update('none');
 };
 
-// Refresh chart data from URL
-const refreshChartData = async () => {
-  if (!chartInstance || !props.configUrl) return;
-  
-  try {
-    const newConfig = await loadConfigFromUrl(props.configUrl);
-    
-    // Update chart data
-    if (newConfig.data) {
-      chartInstance.data.labels = newConfig.data.labels || chartInstance.data.labels;
-      
-      newConfig.data.datasets?.forEach((dataset, index) => {
-        if (chartInstance.data.datasets[index]) {
-          // Update existing dataset
-          chartInstance.data.datasets[index].data = dataset.data;
-          // Optionally update other properties
-          if (dataset.backgroundColor) {
-            chartInstance.data.datasets[index].backgroundColor = dataset.backgroundColor;
-          }
-          if (dataset.borderColor) {
-            chartInstance.data.datasets[index].borderColor = dataset.borderColor;
-          }
-        } else {
-          // Add new dataset
-          chartInstance.data.datasets.push(dataset);
-        }
-      });
-      
-      // Remove extra datasets if new config has fewer
-      if (newConfig.data.datasets && chartInstance.data.datasets.length > newConfig.data.datasets.length) {
-        chartInstance.data.datasets.length = newConfig.data.datasets.length;
-      }
-    }
-    
-    chartInstance.update('none');
-  } catch (e) {
-    console.error('[VpChart] Failed to refresh chart data:', e);
-  }
-};
-
-// Start auto-refresh timer
-const startRefreshTimer = () => {
-  if (refreshTimer) {
-    clearInterval(refreshTimer);
-    refreshTimer = null;
-  }
-  
-  if (props.refreshInterval > 0 && props.configUrl) {
-    refreshTimer = setInterval(refreshChartData, props.refreshInterval);
-  }
-};
-
-// Stop auto-refresh timer
-const stopRefreshTimer = () => {
-  if (refreshTimer) {
-    clearInterval(refreshTimer);
-    refreshTimer = null;
-  }
-};
-
 // Initialize chart
-const initChart = async () => {
+const initChart = () => {
   if (!canvasRef.value) return;
-  
+
   // Destroy old instance if exists (HMR)
   if (chartInstance) {
     chartInstance.destroy();
     chartInstance = null;
   }
-  
-  // Stop existing refresh timer
-  stopRefreshTimer();
 
   try {
-    let config;
-    
-    // Load config from URL or parse from props
-    if (props.configUrl) {
-      config = await loadConfigFromUrl(props.configUrl);
-    } else if (props.config) {
-      config = JSON.parse(decodeURIComponent(props.config));
-    } else {
-      console.error('[VpChart] No config or configUrl provided');
+    const config = props.data;
+
+    if (!config || !config.type) {
+      console.error('[VpChart] No valid config provided');
       return;
     }
-    
+
     chartInstance = new Chart(canvasRef.value, config);
     updateTheme();
-    
-    // Start auto-refresh if interval is set
-    startRefreshTimer();
   } catch (e) {
     console.error('[VpChart] Failed to init chart:', e);
   }
@@ -234,14 +108,11 @@ onMounted(() => {
           if (entry.isIntersecting) {
             isVisible.value = true;
             nextTick(initChart);
-          } else {
-            // Pause refresh when not visible
-            stopRefreshTimer();
           }
         });
       },
       {
-        rootMargin: '100px', // Load slightly before visible
+        rootMargin: '100px',
         threshold: 0
       }
     );
@@ -258,7 +129,6 @@ onUnmounted(() => {
     observer.disconnect();
     observer = null;
   }
-  stopRefreshTimer();
   if (chartInstance) {
     chartInstance.destroy();
     chartInstance = null;
@@ -268,13 +138,6 @@ onUnmounted(() => {
 // React to theme changes
 watch(isDark, () => {
   updateTheme();
-});
-
-// Resume refresh when becoming visible again
-watch(isVisible, (visible) => {
-  if (visible && chartInstance) {
-    startRefreshTimer();
-  }
 });
 </script>
 

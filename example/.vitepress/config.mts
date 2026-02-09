@@ -30,7 +30,6 @@ export default withChartjs(
       nav: [
         { text: 'Home', link: '/' },
         { text: 'Examples', link: '/examples' },
-        { text: 'API', link: '/api' }
       ],
       sidebar: [
         {
@@ -39,7 +38,6 @@ export default withChartjs(
             { text: 'Getting Started', link: '/' },
             { text: 'Examples', link: '/examples' },
             { text: 'External Files', link: '/charts/external' },
-            { text: 'API Reference', link: '/api' }
           ]
         },
         {

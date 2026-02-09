@@ -10,6 +10,8 @@ pnpm add vitepress-plugin-chartjs chart.js
 
 ## Setup
 
+### 1. VitePress Config
+
 Wrap your config with `withChartjs()` in `.vitepress/config.mts`:
 
 ```ts
@@ -18,33 +20,65 @@ import { withChartjs } from 'vitepress-plugin-chartjs'
 
 export default withChartjs(defineConfig({
   title: "My Site",
-  // your config...
+  chartjs: {
+    // plugin options here
+  },
 }))
 ```
 
-**That's it!** No theme configuration needed.
+### 2. Theme Setup
+
+Create `.vitepress/theme/index.ts` and import styles:
+
+```ts
+import DefaultTheme from 'vitepress/theme'
+import 'vitepress-plugin-chartjs/style.css'
+
+export default DefaultTheme
+```
+
+::: warning Style Import Required
+You must import `vitepress-plugin-chartjs/style.css` in your theme for charts to render correctly.
+:::
+
+### 3. With Plugins
+
+If you need Chart.js plugins or extended chart types, register them in the theme:
+
+```ts
+import DefaultTheme from 'vitepress/theme'
+import 'vitepress-plugin-chartjs/style.css'
+
+export default {
+  extends: DefaultTheme,
+  async enhanceApp({ app }) {
+    if (typeof window !== 'undefined') {
+      const { Chart } = await import('chart.js')
+
+      // Example: register zoom plugin
+      const zoomPlugin = (await import('chartjs-plugin-zoom')).default
+      Chart.register(zoomPlugin)
+    }
+  }
+}
+```
 
 ## Plugin Options
 
-Pass options as the second argument to `withChartjs()`:
-
-```ts
-export default withChartjs(
-  defineConfig({ /* ... */ }),
-  {
-    defaultHeight: '400px',
-    enableZoom: true,
-  }
-)
-```
+Pass options via `chartjs` in your VitePress config:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `defaultOptions` | `ChartOptions` | `{}` | Default options for all charts |
-| `defaultHeight` | `string` | `'400px'` | Default chart height |
+| `defaultOptions` | `object` | `{}` | Default options for all charts |
+| `defaultWidth` | `string \| number` | `'100%'` | Default chart width |
+| `defaultHeight` | `string \| number` | `'400px'` | Default chart height |
 | `enableZoom` | `boolean` | `false` | Enable zoom plugin globally |
 | `enableDatalabels` | `boolean` | `false` | Enable datalabels plugin globally |
 | `colorPalette` | `string[]` | Default colors | Custom color palette |
+| `darkColorPalette` | `string[]` | Default dark colors | Color palette for dark mode |
+| `autoDarkMode` | `boolean` | `undefined` | Auto dark mode detection |
+| `containerClass` | `string` | `undefined` | Custom CSS class for chart containers |
+| `root` | `string` | `process.cwd()` | Root directory for resolving `url:` paths |
 
 ## Full Configuration Example
 
@@ -55,37 +89,29 @@ import { withChartjs } from 'vitepress-plugin-chartjs'
 export default withChartjs(
   defineConfig({
     title: "My Docs",
-    
+
     // Your vite plugins are preserved!
     vite: {
       plugins: [/* your plugins */]
     },
-    
-    // Your vue options are preserved!
-    vue: {
-      template: {
-        compilerOptions: {
-          isCustomElement: tag => tag.startsWith('my-')
-        }
-      }
-    },
-    
+
     // Your markdown config is preserved!
     markdown: {
       config: (md) => {
         // your markdown-it plugins
       }
-    }
-  }),
-  {
-    defaultHeight: '400px',
-    colorPalette: [
-      'rgba(54, 162, 235, 0.8)',
-      'rgba(255, 99, 132, 0.8)',
-      'rgba(75, 192, 192, 0.8)',
-      'rgba(255, 206, 86, 0.8)',
-    ],
-  }
+    },
+
+    chartjs: {
+      defaultHeight: '400px',
+      colorPalette: [
+        'rgba(54, 162, 235, 0.8)',
+        'rgba(255, 99, 132, 0.8)',
+        'rgba(75, 192, 192, 0.8)',
+        'rgba(255, 206, 86, 0.8)',
+      ],
+    },
+  })
 )
 ```
 
@@ -94,7 +120,7 @@ export default withChartjs(
 ### Basic Structure
 
 ```yaml
-type: line                    # Required: chart type
+type: line                    # Required: chart type (any string)
 data:                         # Required: chart data
   labels: [...]               # X-axis labels
   datasets:                   # Data series
@@ -103,9 +129,12 @@ data:                         # Required: chart data
 options:                      # Optional: chart options
   plugins: {...}
   scales: {...}
+height: 400px                 # Optional: chart height
 ```
 
-### Supported Chart Types
+### Chart Types
+
+Any chart type string is accepted. Built-in Chart.js types:
 
 | Type | Description |
 |------|-------------|
@@ -117,6 +146,32 @@ options:                      # Optional: chart options
 | `polarArea` | Polar area charts |
 | `scatter` | Scatter plots |
 | `bubble` | Bubble charts |
+
+Extended types (require plugin registration):
+
+| Type | Package |
+|------|---------|
+| `boxplot`, `violin` | `@sgratzl/chartjs-chart-boxplot` |
+| `choropleth`, `bubbleMap` | `chartjs-chart-geo` |
+| `matrix` | `chartjs-chart-matrix` |
+| `treemap` | `chartjs-chart-treemap` |
+| `forceDirectedGraph`, `tree`, `dendrogram` | `chartjs-chart-graph` |
+
+## External Files
+
+Load configs from `public/` folder. All resolved at **build time**.
+
+```yaml
+url: /charts/my-chart.yaml
+```
+
+| Extension | Description | Export Type |
+|-----------|-------------|-------------|
+| `.yaml` | YAML configuration | N/A (parsed as YAML) |
+| `.json` | JSON configuration | N/A (parsed as JSON) |
+| `.js`, `.mjs` | JavaScript module | `export default` (function, async function, or object) |
+
+JS modules run in Node.js at build time — you can use `fs`, `path`, `fetch`, and any installed npm packages.
 
 ## Data Formats
 
@@ -191,51 +246,20 @@ options:
 import type {
   ChartConfig,
   PluginConfig,
+  ChartData,
+  ChartOptions,
+  DatasetConfig,
   SupportedChartType,
+  ValidationResult,
 } from 'vitepress-plugin-chartjs'
-```
-
-## Default Color Palette
-
-```ts
-const DEFAULT_COLORS = [
-  'rgba(54, 162, 235, 0.8)',   // Blue
-  'rgba(255, 99, 132, 0.8)',   // Red
-  'rgba(75, 192, 192, 0.8)',   // Teal
-  'rgba(255, 206, 86, 0.8)',   // Yellow
-  'rgba(153, 102, 255, 0.8)',  // Purple
-  'rgba(255, 159, 64, 0.8)',   // Orange
-]
 ```
 
 ## How It Works
 
-1. **withChartjs()** wrapper merges your config with plugin settings
-2. **Vite plugin** injects client script into .md files with charts
-3. **Markdown plugin** converts chart blocks to `<vp-chart>` elements
-4. **Client script** registers Web Component (SSR-safe)
-5. **connectedCallback** initializes Chart.js when element appears
+1. **`withChartjs()`** wraps your VitePress config, adding markdown and Vite plugins
+2. **Markdown plugin** converts `` ```chart `` blocks to `<VpChart />` Vue components at build time
+3. **Build-time resolver** handles `url:` directives — reads files, executes JS modules
+4. **Vite plugin** registers the `VpChart` Vue component in the client app
+5. **Vue component** renders the chart with Chart.js when visible (IntersectionObserver)
 
-This approach:
-- Preserves your existing vite/vue/markdown configs
-- Is SSR-safe (no `HTMLElement is not defined` errors)
-- Works with VitePress SPA navigation
-- Properly cleans up chart instances
-
-## Legacy API
-
-If you prefer explicit config, use `chartjsPlugin()`:
-
-```ts
-import { chartjsPlugin } from 'vitepress-plugin-chartjs'
-
-const chartjs = chartjsPlugin({ defaultHeight: '400px' })
-
-export default defineConfig({
-  vue: chartjs.vue,
-  vite: chartjs.vite,
-  markdown: chartjs.markdown,
-})
-```
-
-However, `withChartjs()` is recommended for better DX.
+All data resolution happens at build time. The client only receives pre-computed chart configurations — no runtime fetching.

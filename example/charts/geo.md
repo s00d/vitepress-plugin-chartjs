@@ -8,6 +8,7 @@ Add to `.vitepress/theme/index.ts`:
 
 ```typescript
 import DefaultTheme from 'vitepress/theme'
+import 'vitepress-plugin-chartjs/style.css'
 
 export default {
   extends: DefaultTheme,
@@ -15,7 +16,7 @@ export default {
     if (typeof window !== 'undefined') {
       const { Chart, registerables } = await import('chart.js')
       Chart.register(...registerables)
-      
+
       const geo = await import('chartjs-chart-geo')
       Chart.register(
         geo.ChoroplethController,
@@ -32,7 +33,7 @@ export default {
 
 ::: tip Installation
 ```bash
-npm install chartjs-chart-geo
+npm install chartjs-chart-geo topojson-client
 ```
 :::
 
@@ -40,7 +41,7 @@ npm install chartjs-chart-geo
 
 ## Loading from External File
 
-The recommended way to create geo charts with real map data is using JavaScript configuration files.
+The recommended way to create geo charts with real map data is using JavaScript configuration files. JS modules run at **build time** in Node.js, so use installed npm packages (not browser imports).
 
 ### US States Map
 
@@ -60,16 +61,16 @@ url: /charts/us-states.js
 ::: details View us-states.js source
 ```javascript
 // US States Choropleth Map
-export default async function() {
-  // Load topojson-client for parsing TopoJSON data
-  const topojson = await import('https://esm.sh/topojson-client@3')
-  
-  const response = await fetch('https://unpkg.com/us-atlas/states-10m.json')
-  const us = await response.json()
-  
-  const nation = topojson.feature(us, us.objects.nation).features[0]
-  const states = topojson.feature(us, us.objects.states).features
-  
+// Build-time: uses Node.js fetch + installed topojson-client
+import * as topojson from 'topojson-client';
+
+export default async function () {
+  const response = await fetch('https://unpkg.com/us-atlas/states-10m.json');
+  const us = await response.json();
+
+  const nation = topojson.feature(us, us.objects.nation).features[0];
+  const states = topojson.feature(us, us.objects.states).features;
+
   return {
     type: 'choropleth',
     data: {
@@ -82,21 +83,12 @@ export default async function() {
     },
     options: {
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        datalabels: { display: false }
       },
       scales: {
-        projection: {
-          axis: 'x',
-          projection: 'albersUsa'
-        },
-        color: {
-          axis: 'x',
-          quantize: 5,
-          legend: {
-            position: 'bottom-right',
-            align: 'bottom'
-          }
-        }
+        projection: { axis: 'x', projection: 'albersUsa' },
+        color: { axis: 'x', quantize: 5, legend: { display: false } }
       }
     }
   }
@@ -124,16 +116,16 @@ url: /charts/world-countries.js
 ::: details View world-countries.js source
 ```javascript
 // World Countries Choropleth Map
-export default async function() {
-  // Load topojson-client for parsing TopoJSON data
-  const topojson = await import('https://esm.sh/topojson-client@3')
-  
-  const response = await fetch('https://unpkg.com/world-atlas/countries-50m.json')
-  const world = await response.json()
-  
-  const land = topojson.feature(world, world.objects.land).features[0]
-  const countries = topojson.feature(world, world.objects.countries).features
-  
+// Build-time: uses Node.js fetch + installed topojson-client
+import * as topojson from 'topojson-client';
+
+export default async function () {
+  const response = await fetch('https://unpkg.com/world-atlas/countries-50m.json');
+  const world = await response.json();
+
+  const land = topojson.feature(world, world.objects.land).features[0];
+  const countries = topojson.feature(world, world.objects.countries).features;
+
   return {
     type: 'choropleth',
     data: {
@@ -146,20 +138,12 @@ export default async function() {
     },
     options: {
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        datalabels: { display: false }
       },
       scales: {
-        projection: {
-          axis: 'x',
-          projection: 'equalEarth'
-        },
-        color: {
-          axis: 'x',
-          quantize: 5,
-          legend: {
-            position: 'bottom-right'
-          }
-        }
+        projection: { axis: 'x', projection: 'equalEarth' },
+        color: { axis: 'x', quantize: 5, legend: { position: 'bottom-right' } }
       }
     }
   }

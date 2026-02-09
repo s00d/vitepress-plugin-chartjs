@@ -12,11 +12,10 @@ A powerful VitePress plugin for rendering Chart.js charts directly from markdown
 ## Features
 
 - **All Chart Types**: Line, Bar, Pie, Doughnut, Radar, Polar Area, Bubble, Scatter and more
-- **Full Chart.js 4.x Support**: Complete TypeScript types for all options
-- **Any Plugin Support**: Register any Chart.js plugin or chart type extension in your theme - the core is completely plugin-agnostic
+- **Any Plugin Support**: Register any Chart.js plugin or chart type extension in your theme — the core is completely plugin-agnostic
+- **Build-Time Resolution**: All chart data (YAML, JSON, JS modules) is resolved at build time — no runtime fetching
 - **Lazy Loading**: Charts initialize only when visible on screen (IntersectionObserver)
 - **External Config**: Load chart configurations from YAML, JSON, or JavaScript files
-- **Auto-Refresh**: Periodically reload data from JavaScript config files
 - **Dark Mode Support**: Automatic theme switching
 - **Responsive**: Charts adapt to container size
 - **Simple Syntax**: YAML or JSON configuration in code blocks
@@ -25,13 +24,13 @@ A powerful VitePress plugin for rendering Chart.js charts directly from markdown
 
 ```bash
 # npm
-npm install vitepress-plugin-chartjs
+npm install vitepress-plugin-chartjs chart.js
 
 # pnpm
-pnpm add vitepress-plugin-chartjs
+pnpm add vitepress-plugin-chartjs chart.js
 
 # yarn
-yarn add vitepress-plugin-chartjs
+yarn add vitepress-plugin-chartjs chart.js
 ```
 
 ## Quick Start
@@ -46,8 +45,8 @@ import { withChartjs } from 'vitepress-plugin-chartjs'
 export default withChartjs(
   defineConfig({
     title: "My Docs",
-    
-    // Plugin options
+
+    // Plugin options (optional)
     chartjs: {
       defaultHeight: '400px',
       colorPalette: [
@@ -60,21 +59,23 @@ export default withChartjs(
 )
 ```
 
-### 2. Setup Theme (Optional)
+### 2. Setup Theme
 
-If you want to use Chart.js plugins or extended chart types, create `.vitepress/theme/index.ts`:
+Create `.vitepress/theme/index.ts` to import plugin styles and optionally register Chart.js plugins:
 
 ```ts
 import DefaultTheme from 'vitepress/theme'
+// Import plugin styles (required)
+import 'vitepress-plugin-chartjs/style.css'
 
 export default {
   extends: DefaultTheme,
   async enhanceApp({ app }) {
     // Only load on client (SSR-safe)
     if (typeof window !== 'undefined') {
-      const { Chart, registerables } = await import('chart.js')
-      Chart.register(...registerables)
-      
+      // Optional: register Chart.js plugins
+      const { Chart } = await import('chart.js')
+
       const zoomPlugin = (await import('chartjs-plugin-zoom')).default
       Chart.register(zoomPlugin)
     }
@@ -82,7 +83,14 @@ export default {
 }
 ```
 
-If you don't need plugins, you can skip this step — basic chart types work without any setup.
+If you don't need plugins, you still need to import styles:
+
+```ts
+import DefaultTheme from 'vitepress/theme'
+import 'vitepress-plugin-chartjs/style.css'
+
+export default DefaultTheme
+```
 
 ### 3. Create Charts in Markdown
 
@@ -108,7 +116,7 @@ options:
 
 ### 4. Load Configuration from File
 
-You can load chart configuration from external files in your `public` folder. Supports **YAML**, **JSON**, and **JavaScript** files.
+You can load chart configuration from external files in your `public` folder. All files are resolved **at build time** — no runtime fetching.
 
 #### YAML/JSON Files
 
@@ -133,7 +141,7 @@ data:
 
 #### JavaScript Files (Dynamic Data)
 
-Use JavaScript files to generate dynamic configurations:
+JavaScript files are executed **at build time** in Node.js. You can use `fs`, `path`, `fetch` and any installed npm packages.
 
 ````markdown
 ```chart
@@ -144,12 +152,11 @@ url: /charts/dynamic-chart.js
 Example JS file (`public/charts/dynamic-chart.js`):
 
 ```javascript
-// Function export - called each time chart is rendered
 export default function() {
-  const randomData = Array.from({ length: 6 }, () => 
+  const randomData = Array.from({ length: 6 }, () =>
     Math.floor(Math.random() * 100)
   );
-  
+
   return {
     type: 'bar',
     data: {
@@ -163,13 +170,13 @@ export default function() {
 }
 ```
 
-Async functions are also supported for API data fetching:
+Async functions are also supported:
 
 ```javascript
 export default async function() {
-  const response = await fetch('/api/data');
+  const response = await fetch('https://api.example.com/data');
   const data = await response.json();
-  
+
   return {
     type: 'line',
     data: data
@@ -181,30 +188,7 @@ export default async function() {
 |-----------|-----------|-------------|
 | YAML | `.yaml` | Static configuration |
 | JSON | `.json` | Static configuration |
-| JavaScript | `.js`, `.mjs` | Dynamic/computed configuration |
-
-This allows you to:
-- **Reuse** chart configurations across multiple pages
-- **Separate** data from documentation content
-- **Generate** dynamic data with JavaScript
-- **Fetch** data from APIs with async functions
-- **Share** chart templates between projects
-
-#### Auto-Refresh
-
-Add the `refresh` parameter to automatically reload data at a specified interval (in milliseconds):
-
-````markdown
-```chart
-url: /charts/realtime-data.js
-refresh: 2000
-```
-````
-
-This will call the JS function every 2 seconds and update the chart with new data. Perfect for:
-- **Server monitoring** dashboards
-- **Live data** visualizations
-- **Simulated realtime** demos
+| JavaScript | `.js`, `.mjs` | Dynamic/computed configuration (runs in Node.js at build time) |
 
 ## Chart Types
 
@@ -265,66 +249,23 @@ data:
         - { x: 20, y: 30 }
 ```
 
-### Box Plot / Violin
+### Extended Chart Types
 
-```yaml
-type: boxplot
-data:
-  labels: [Group A, Group B, Group C]
-  datasets:
-    - label: Distribution
-      data:
-        - [10, 15, 20, 25, 30, 35, 40]
-        - [5, 10, 15, 20, 25, 30, 35, 40]
-        - [15, 20, 25, 30, 35, 40, 45]
-```
+With additional Chart.js plugins you can use:
 
-### Choropleth / Geographic Maps
+| Package | Chart Types |
+|---------|-------------|
+| `@sgratzl/chartjs-chart-boxplot` | `boxplot`, `violin` |
+| `chartjs-chart-geo` | `choropleth`, `bubbleMap` |
+| `chartjs-chart-matrix` | `matrix` |
+| `chartjs-chart-treemap` | `treemap` |
+| `chartjs-chart-graph` | `forceDirectedGraph`, `tree`, `dendrogram` |
 
-Geographic charts require loading data via JavaScript files. Create a JS config file:
-
-```javascript
-// public/charts/us-map.js
-export default async function() {
-  const topojson = await import('https://esm.sh/topojson-client@3')
-  const response = await fetch('https://unpkg.com/us-atlas/states-10m.json')
-  const us = await response.json()
-  
-  const nation = topojson.feature(us, us.objects.nation).features[0]
-  const states = topojson.feature(us, us.objects.states).features
-  
-  return {
-    type: 'choropleth',
-    data: {
-      labels: states.map((d) => d.properties.name),
-      datasets: [{
-        label: 'States',
-        outline: nation,
-        data: states.map((d) => ({ feature: d, value: Math.random() * 10 }))
-      }]
-    },
-    options: {
-      scales: {
-        projection: { axis: 'x', projection: 'albersUsa' },
-        color: { axis: 'x', quantize: 5 }
-      }
-    }
-  }
-}
-```
-
-Then use in markdown:
-
-````markdown
-```chart
-url: /charts/us-map.js
-height: 350px
-```
-````
+Register them in your theme and use any `type` string — the plugin accepts any chart type.
 
 ## Plugin Configuration
 
-Plugins must be registered in your theme (see Setup Theme above). Then configure per-chart:
+### Configure per chart in YAML
 
 ```yaml
 options:
@@ -336,25 +277,9 @@ options:
         mode: xy
       pan:
         enabled: true
-```
-
-### Enable Data Labels
-
-```yaml
-options:
-  plugins:
     datalabels:
       display: true
       color: white
-      font:
-        weight: bold
-```
-
-### Add Annotations
-
-```yaml
-options:
-  plugins:
     annotation:
       annotations:
         line1:
@@ -362,59 +287,44 @@ options:
           yMin: 50
           yMax: 50
           borderColor: red
-          borderDash: [5, 5]
-          label:
-            display: true
-            content: Target
 ```
 
 ## Configuration Options
 
-Options are passed via `chartjs:` in your VitePress config:
+Options are passed via `chartjs` in your VitePress config:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `defaultOptions` | `ChartOptions` | `{}` | Default options for all charts |
+| `defaultOptions` | `object` | `{}` | Default options for all charts |
 | `defaultWidth` | `string \| number` | `'100%'` | Default chart width |
 | `defaultHeight` | `string \| number` | `'400px'` | Default chart height |
 | `colorPalette` | `string[]` | Built-in | Custom color palette |
-
-## Client API
-
-```ts
-import { 
-  initCharts, 
-  destroyCharts, 
-  getChart, 
-  resetZoom 
-} from 'vitepress-plugin-chartjs/client'
-
-// Initialize all charts
-initCharts()
-
-// Destroy all charts
-destroyCharts()
-
-// Get specific chart instance
-const chart = getChart('chart-id')
-
-// Reset zoom
-resetZoom('chart-id')
-```
+| `enableZoom` | `boolean` | `false` | Enable zoom plugin globally |
+| `enableDatalabels` | `boolean` | `false` | Enable datalabels plugin globally |
+| `root` | `string` | `process.cwd()` | Root directory for resolving `url:` paths |
 
 ## TypeScript Support
-
-Full TypeScript support with types for all chart configurations:
 
 ```ts
 import type {
   ChartConfig,
   PluginConfig,
-  LineDatasetConfig,
-  BarDatasetConfig,
-  // ... and more
+  ChartData,
+  ChartOptions,
+  DatasetConfig,
+  SupportedChartType,
 } from 'vitepress-plugin-chartjs'
 ```
+
+## How It Works
+
+1. **`withChartjs()`** wraps your VitePress config, adding markdown and Vite plugins
+2. **Markdown plugin** converts `` ```chart `` blocks to `<VpChart />` Vue components at build time
+3. **Build-time resolver** handles `url:` directives — reads YAML/JSON files, executes JS modules, fetches HTTP URLs
+4. **Vite plugin** registers the `VpChart` Vue component in the client app
+5. **Vue component** renders the chart with Chart.js when it becomes visible (IntersectionObserver)
+
+All data resolution happens at build time. The client only receives pre-computed chart configurations.
 
 ## Dependencies
 

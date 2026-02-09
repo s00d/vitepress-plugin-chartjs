@@ -1,75 +1,53 @@
-import type { Plugin } from "vite";
-import type { PluginConfig } from "./config";
-import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
+import type { Plugin } from 'vite';
+import type { PluginConfig } from './config';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 
-export interface ChartjsPluginConfig {
-  class?: string;
-}
-
-const DEFAULT_OPTIONS: PluginConfig = {};
-
-// Get VpChart.vue path relative to this module
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const vpChartPath = resolve(__dirname, "VpChart.vue");
 
-export function ChartjsPlugin(
-  inlineOptions?: Partial<PluginConfig>
-): Plugin {
-  const options = {
-    ...DEFAULT_OPTIONS,
-    ...inlineOptions,
-  };
-
-  const virtualModuleId = "virtual:chartjs-config";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
-  const vpChartModuleId = "vitepress-plugin-chartjs/VpChart.vue";
+export function ChartjsPlugin(_inlineOptions?: Partial<PluginConfig>): Plugin {
+  const vpChartModuleId = 'vitepress-plugin-chartjs/client';
 
   return {
-    name: "vitepress-plugin-chartjs",
-    enforce: "pre",
+    name: 'vitepress-plugin-chartjs',
+    enforce: 'pre',
 
     transform(src, id) {
-      // Register VpChart component in vue instance creation
-      if (id.includes("vitepress/dist/client/app/index.js")) {
-        src =
-          `\nimport VpChart from '${vpChartModuleId}';\n` +
-          src;
+      if (id.includes('vitepress/dist/client/app/index.js')) {
+        src = `\nimport VpChart from '${vpChartModuleId}';\n` + src;
 
-        const lines = src.split("\n");
+        const lines = src.split('\n');
+        const targetLineIndex = lines.findIndex((line) => line.includes('app.component'));
 
-        const targetLineIndex = lines.findIndex((line) =>
-          line.includes("app.component")
-        );
+        if (targetLineIndex !== -1) {
+          lines.splice(targetLineIndex, 0, '  app.component("VpChart", VpChart);');
+        }
+        src = lines.join('\n');
 
-        lines.splice(
-          targetLineIndex,
-          0,
-          '  app.component("VpChart", VpChart);'
-        );
-
-        src = lines.join("\n");
-
-        return {
-          code: src,
-          map: null,
-        };
+        return { code: src, map: null };
       }
     },
 
     resolveId(id) {
-      if (id === virtualModuleId) {
-        return resolvedVirtualModuleId;
-      }
-      // Resolve VpChart.vue to the actual file path
       if (id === vpChartModuleId) {
-        return vpChartPath;
-      }
-    },
+        // 1. Dev mode: source .ts file exists next to this file
+        const devPath = resolve(__dirname, 'client.ts');
+        if (existsSync(devPath)) {
+          return devPath;
+        }
 
-    load(id) {
-      if (id === resolvedVirtualModuleId) {
-        return `export default ${JSON.stringify(options)};`;
+        // 2. Production: compiled .mjs (ES module)
+        const prodMjs = resolve(__dirname, 'client.mjs');
+        if (existsSync(prodMjs)) {
+          return prodMjs;
+        }
+
+        // 3. Fallback: .js
+        const prodJs = resolve(__dirname, 'client.js');
+        if (existsSync(prodJs)) {
+          return prodJs;
+        }
       }
     },
   };

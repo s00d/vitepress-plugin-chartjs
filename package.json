@@ -1,25 +1,32 @@
 {
   "name": "vitepress-plugin-chartjs",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Chart.js plugin for VitePress - render charts from markdown code blocks",
   "type": "module",
   "types": "./dist/index.d.ts",
-  "main": "./dist/vitepress-plugin-chartjs.umd.js",
-  "module": "./dist/vitepress-plugin-chartjs.es.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/vitepress-plugin-chartjs.es.mjs",
-      "require": "./dist/vitepress-plugin-chartjs.umd.js"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
     },
-    "./VpChart.vue": "./dist/VpChart.vue"
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.mjs"
+    },
+    "./style.css": "./dist/style.css"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "vite build",
-    "dev": "pnpm build && pnpm -C example docs:dev",
+    "typecheck": "vue-tsc --noEmit",
+    "build": "vue-tsc --noEmit && vite build",
+    "dev:watch": "vite build --watch",
+    "dev:docs": "pnpm -C example docs:dev",
+    "dev": "pnpm build && concurrently -k -n lib,docs -c blue,green \"pnpm dev:watch\" \"pnpm dev:docs\"",
     "docs:build": "pnpm build && pnpm -C example docs:build",
     "docs:preview": "pnpm -C example docs:preview"
   },
@@ -30,12 +37,14 @@
     "@types/node": "^22.0.0",
     "@vitejs/plugin-vue": "^6.0.0",
     "chart.js": "^4.5.0",
+    "concurrently": "^9.2.1",
     "typescript": "^5.9.0",
     "vite": "^7.3.1",
     "vite-plugin-dts": "^4.5.0",
-    "vite-plugin-static-copy": "^3.0.0",
     "vitepress": "^1.0.0",
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
+    "vue-tsc": "^3.2.4",
+    "zod": "^4.3.6"
   },
   "peerDependencies": {
     "chart.js": "^4.0.0",
@@ -43,11 +52,19 @@
   },
   "keywords": [
     "vitepress",
+    "vitepress-plugin",
     "chartjs",
     "chart.js",
     "charts",
     "markdown",
-    "visualization"
+    "markdown-it",
+    "vue",
+    "vue3",
+    "visualization",
+    "data-visualization",
+    "code-block",
+    "docs",
+    "documentation"
   ],
   "author": "s00d",
   "license": "MIT",
@@ -58,5 +75,16 @@
   "homepage": "https://github.com/s00d/vitepress-plugin-chartjs",
   "bugs": {
     "url": "https://github.com/s00d/vitepress-plugin-chartjs/issues"
-  }
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://www.donationalerts.com/r/s00d88"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": [
+    "**/*.vue",
+    "**/*.css"
+  ]
 }

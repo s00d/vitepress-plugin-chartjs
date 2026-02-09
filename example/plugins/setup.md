@@ -8,6 +8,7 @@ Create `.vitepress/theme/index.ts`:
 
 ```typescript
 import DefaultTheme from 'vitepress/theme'
+import 'vitepress-plugin-chartjs/style.css'
 
 export default {
   extends: DefaultTheme,
@@ -15,7 +16,7 @@ export default {
     if (typeof window !== 'undefined') {
       const { Chart, registerables } = await import('chart.js')
       Chart.register(...registerables)
-      
+
       // Add plugins you need
       const zoomPlugin = (await import('chartjs-plugin-zoom')).default
       Chart.register(zoomPlugin)
@@ -23,6 +24,10 @@ export default {
   }
 }
 ```
+
+::: warning Style Import Required
+You must import `vitepress-plugin-chartjs/style.css` in your theme. Without it, chart containers will not be styled correctly.
+:::
 
 ::: warning SSR Compatibility
 Always wrap imports with `if (typeof window !== 'undefined')` to avoid SSR errors.
@@ -34,6 +39,7 @@ Here's a complete theme setup with all available plugins:
 
 ```typescript
 import DefaultTheme from 'vitepress/theme'
+import 'vitepress-plugin-chartjs/style.css'
 
 export default {
   extends: DefaultTheme,
@@ -41,36 +47,36 @@ export default {
     if (typeof window !== 'undefined') {
       const { Chart } = await import('chart.js')
       // === PLUGINS ===
-      
+
       // Zoom - pan and zoom
       const zoomPlugin = (await import('chartjs-plugin-zoom')).default
       Chart.register(zoomPlugin)
-      
+
       // Datalabels - labels on data points
       const datalabelsPlugin = (await import('chartjs-plugin-datalabels')).default
       Chart.register(datalabelsPlugin)
-      
+
       // Annotation - lines, boxes, labels
       const annotationPlugin = (await import('chartjs-plugin-annotation')).default
       Chart.register(annotationPlugin)
-      
-      // Autocolors - automatic colors
+
+      // Autocolors - automatic color generation
       const autocolorsPlugin = await import('chartjs-plugin-autocolors')
       Chart.register(autocolorsPlugin.default || autocolorsPlugin)
-      
+
       // Colorschemes - predefined schemes
       await import('hw-chartjs-plugin-colorschemes')
-      
+
       // Streaming - realtime data
       await import('chartjs-adapter-luxon')
       const streamingPlugin = (await import('@aziham/chartjs-plugin-streaming')).default
       Chart.register(streamingPlugin)
-      
+
       // Timestack - stacked time scale
       await import('chartjs-scale-timestack')
-      
+
       // === CHART TYPE EXTENSIONS ===
-      
+
       // Box Plot & Violin
       const boxplot = await import('@sgratzl/chartjs-chart-boxplot')
       Chart.register(
@@ -79,7 +85,7 @@ export default {
         boxplot.ViolinController,
         boxplot.Violin
       )
-      
+
       // Geographic Maps
       const geo = await import('chartjs-chart-geo')
       Chart.register(
@@ -90,15 +96,15 @@ export default {
         geo.ColorScale,
         geo.SizeScale
       )
-      
+
       // Matrix / Heatmap
       const matrix = await import('chartjs-chart-matrix')
       Chart.register(matrix.MatrixController, matrix.MatrixElement)
-      
+
       // Treemap
       const treemap = await import('chartjs-chart-treemap')
       Chart.register(treemap.TreemapController, treemap.TreemapElement)
-      
+
       // Graph / Tree / Dendrogram
       const graph = await import('chartjs-chart-graph')
       Chart.register(
@@ -151,7 +157,7 @@ npm install chartjs-scale-timestack luxon
 
 # Chart types (optional)
 npm install @sgratzl/chartjs-chart-boxplot
-npm install chartjs-chart-geo
+npm install chartjs-chart-geo topojson-client
 npm install chartjs-chart-matrix
 npm install chartjs-chart-treemap
 npm install chartjs-chart-graph
@@ -159,9 +165,11 @@ npm install chartjs-chart-graph
 
 ## No Plugins Needed?
 
-If you only use basic chart types (line, bar, pie, etc.), no theme setup is required:
+If you only use basic chart types (line, bar, pie, etc.), you still need to import styles:
 
 ```typescript
 import DefaultTheme from 'vitepress/theme'
+import 'vitepress-plugin-chartjs/style.css'
+
 export default DefaultTheme
 ```
